@@ -1,0 +1,11 @@
+
+# Protect my Image by RobzLabz
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{REQUEST_URI} \.(jpg|jpeg|png|gif)$ [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?($domain) [NC]
+RewriteCond %{HTTP_USER_AGENT} !(googlebot|msnbot|baiduspider|slurp|webcrawler|teoma|photon|facebookexternalhit|pinterest|feedfetcher) [NC]
+RewriteCond %{HTTP_USER_AGENT} !(photon|smush.it|akamai|cloudfront|netdna|bitgravity|maxcdn|edgecast|limelight) [NC]
+RewriteRule (.*) wpr_redir.php?to=$1 [L]
+</IfModule>
+# END"

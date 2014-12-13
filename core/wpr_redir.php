@@ -7,32 +7,51 @@
 |
 */
 
+include('wp-config.php');
 
 if(isset($_GET['to'])){
+	
+	$cache_file = ABSPATH . "wpr_cache.cache";	
+	if(! file_exists($cache_file) || ! is_writable($cache_file)) {
+		die("Please re-enable plugins");
+	}
+	
+	$cache 		= unserialize(file_get_contents($cache_file));
 
-	include('wp-config.php');
+	$image 		= $_GET['to'];
+	$imageMD5 	= md5($image);
+	$wpr_to 	= $cache['info']['to'];
 
-	$image = $_GET['to'];    
-    $siteurl  = get_option('siteurl');
-	$domain   = str_replace(array('https://','http://','www.'),'',$siteurl);
+	var_dump($cache);
+    
+    // cari gambar yang benar
+    if(isset($cache['db'][$imageMD5])) {
+    	$to_single 		= $cache['db'][$imageMD5]['single'];
+    	$to_attach		= $cache['db'][$imageMD5]['attachment'];
+    } else {
+    	$attach = $wpdb->get_results("SELECT ID, post_name, guid, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND post_status='inherit' AND guid LIKE '%{$image}'");
+		$ID = $attach[0]->post_parent;
+		$single = $wpdb->get_results("SELECT ID, post_name FROM $wpdb->posts WHERE post_type='post' AND post_status='publish' AND ID = $ID");	
 
-    // cari gambar yang beanr    
-	$attach = $wpdb->get_results("SELECT ID, post_name, guid, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND post_status='inherit' AND guid LIKE '%{$image}'");
-	$ID = $attach[0]->post_parent;
-	$single = $wpdb->get_results("SELECT ID, post_name FROM $wpdb->posts WHERE post_type='post' AND post_status='publish' AND ID = $ID");
+		$to_single = $single[0]->post_name . "/";
+		$to_attach = $to_single . $attach[0]->post_name . "/";
 
-	$to_single = $single[0]->post_name . "/";
-	$to_attach = $to_single . $attach[0]->post_name . "/";
-
-	if( get_option('wpr_to') == 'attachment' ) {
+		$cache['db'][$imageMD5]['single'] = $to_single;
+		$cache['db'][$imageMD5]['attachment'] = $to_attach;
+		file_put_contents($cache_file, serialize($cache));
+    }
+	
+	if( $wpr_to == 'attachment' ) { // attachment
 		$url = $to_attach;
-	} else { // single
+	} else if($wpr_to == 'single') { // single
 		$url = $to_single;
-	}	
-
+	} else { // home
+		$url = '';
+	}
+	
 	// redirect now!
 	header("HTTP/1.1 302 Found");
-	header("Location: http://{$domain}/". $url);	
+	header("Location: http://{$cache['info']['domain']}/". $url);	
 	die();
 }
 

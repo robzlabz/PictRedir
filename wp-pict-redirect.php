@@ -2,7 +2,7 @@
 /*
 Plugin Name: Wordpress Picture Redirect
 Plugin URI: 
-Description: Fast Wordpress Redirect Picture
+Description: Fast Wordpress Redirect Picture with Cache
 Author: Robbyn Rahmandaru
 Version: 1.0
 Author URI: http://robbynr.com/
@@ -46,29 +46,50 @@ function wpr_save(){
 	
 	// buat status 0 atau 1
 	$status = isset($_POST['status']) ? 1 : 0;
-
-	// hanya mengubah tujuan redirect 
 	
 	update_option('wpr_redir', $_POST['redir']);		
 	echo('<div class="updated"><p><strong>Success</strong> Redirect berhasil di rubah menuju '.$_POST['redir'].'</p></div>');	
-	 
 
 	if(file_exists($htaccess) && is_writable($htaccess)) {
 		if($status == 1) { // enable			
+
 			// jika belum ada maka dibuat
 			$data = file_get_contents($htaccess);
 			if(strpos($data, $htaccess_redir) === FALSE) {
 				$rewrite = "$data $htaccess_redir";
 				file_put_contents($htaccess, $rewrite);
-			}			
+			}
+			// tambah file wpr_redir.php
+			if( ! file_exists(ABSPATH . "wpr_redir.php")) {
+				$script = file_get_contents(__DIR__."/core/wpr_redir.php");
+				file_put_contents(ABSPATH . "wpr_redir.php", $script);
+			}
+			// tambah file cache standar			
+			$serialize = array('info' => array(
+				'domain' => $domain,
+				'to'	 => $_POST['redir']
+			));
+			file_put_contents(ABSPATH . "wpr_cache.cache", serialize($serialize));
+			
+
 			die('<div class="updated"><p><strong>Success</strong> Redirect berhasil di aktifkan</p></div>');
 		} else if ($status == 0) {			
+
 			// jika sudah ada maka di hapus
 			$data = file_get_contents($htaccess);
 			if(strpos($data, $htaccess_redir) !== FALSE) {
 				$rewrite = str_replace($htaccess_redir, '', $data);
 				file_put_contents($htaccess, $rewrite);
 			}
+			// hapus wpr_redir
+			if(file_exists(ABSPATH . "wpr_redir.php")) {
+				unlink(ABSPATH . "wpr_redir.php");
+			}
+			// hapus file cache
+			if(file_exists(ABSPATH . "wpr_cache.cache")) {
+				unlink(ABSPATH . "wpr_cache.cache");
+			}
+
 			die('<div class="updated"><p><strong>Success</strong> Redirect berhasil di non aktifkan</p></div>');
 		}
 		update_option('wpr_status', $status);

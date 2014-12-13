@@ -44,7 +44,7 @@
 			var data = $('#form').serialize();
 
 			$.post(ajaxurl, data, function(result){
-				$("#result").html(result).fadeIn(1000).fadeOut(5000);
+				$("#result").html(result).fadeIn(1000); //.fadeOut(5000);
 			})
 		});
 	});

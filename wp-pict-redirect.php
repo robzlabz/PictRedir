@@ -37,26 +37,41 @@ function wpr_setting() {
 
 add_action('wp_ajax_setting', 'wpr_save');
 function wpr_save(){
+
+	$siteurl  = get_option('siteurl');
+	$domain   = str_replace(array('https://','http://','www.'),'',$siteurl);
+
+	$htaccess = ABSPATH . ".htaccess";
+	$htaccess_redir = str_replace("{{domain}}", $domain, file_get_contents(__DIR__."/core/redir.txt"));
 	
+	// buat status 0 atau 1
 	$status = isset($_POST['status']) ? 1 : 0;
 
 	// hanya mengubah tujuan redirect 
-	if(get_option('wpr_status') == $status) {
-		update_option('wpr_redir', $_POST['redir']);
-		die('<div class="updated"><p><strong>Success</strong> Htaccess berhasil di rubah menuju '.$_POST['redir'].'</p></div>');	
-	} 
+	
+	update_option('wpr_redir', $_POST['redir']);		
+	echo('<div class="updated"><p><strong>Success</strong> Redirect berhasil di rubah menuju '.$_POST['redir'].'</p></div>');	
+	 
 
-
-	$htaccess_redir = file_get_contents(__DIR__."/core/redir.txt");
-	if(file_exists(ABSPATH . ".htaccess") && is_writable(ABSPATH . ".htaccess")) {
-		if($status == 1) {
-
+	if(file_exists($htaccess) && is_writable($htaccess)) {
+		if($status == 1) { // enable			
 			// jika belum ada maka dibuat
-
-			update_option('wpr_status', $status);
-		} else if ($status == 0) {
+			$data = file_get_contents($htaccess);
+			if(strpos($data, $htaccess_redir) === FALSE) {
+				$rewrite = "$data $htaccess_redir";
+				file_put_contents($htaccess, $rewrite);
+			}			
+			die('<div class="updated"><p><strong>Success</strong> Redirect berhasil di aktifkan</p></div>');
+		} else if ($status == 0) {			
 			// jika sudah ada maka di hapus
+			$data = file_get_contents($htaccess);
+			if(strpos($data, $htaccess_redir) !== FALSE) {
+				$rewrite = str_replace($htaccess_redir, '', $data);
+				file_put_contents($htaccess, $rewrite);
+			}
+			die('<div class="updated"><p><strong>Success</strong> Redirect berhasil di non aktifkan</p></div>');
 		}
+		update_option('wpr_status', $status);
 	} else {
 		echo '<div class="error"><p><strong>ERROR</strong> .htaccess not found / not writeable</p></div>';
 	}

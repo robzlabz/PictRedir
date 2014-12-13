@@ -22,8 +22,6 @@ if(isset($_GET['to'])){
 	$imageMD5 	= md5($image);
 	$wpr_to 	= $cache['info']['to'];
 
-	var_dump($cache);
-    
     // cari gambar yang benar
     if(isset($cache['db'][$imageMD5])) {
     	$to_single 		= $cache['db'][$imageMD5]['single'];

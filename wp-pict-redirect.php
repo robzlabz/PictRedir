@@ -65,8 +65,7 @@ function wpr_save(){
 				file_put_contents(ABSPATH . "wpr_redir.php", $script);
 			}
 			// tambah file cache standar			
-			$serialize = array('info' => array(
-				'domain' => $domain,
+			$serialize = array('info' => array(				
 				'to'	 => $_POST['redir']
 			));
 			file_put_contents(ABSPATH . "wpr_cache.cache", serialize($serialize));

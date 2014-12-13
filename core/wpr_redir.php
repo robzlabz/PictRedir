@@ -49,7 +49,7 @@ if(isset($_GET['to'])){
 	
 	// redirect now!
 	header("HTTP/1.1 302 Found");
-	header("Location: http://{$cache['info']['domain']}/". $url);	
+	header("Location: ". $url);	
 	die();
 }
 

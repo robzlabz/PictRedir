@@ -16,6 +16,19 @@ function wpr_show($view, $data = array()) {
 	include __DIR__ . "/views/{$view}.php";
 }
 
+function rrmdir($dir) {
+   	if (is_dir($dir)) {
+     	$objects = scandir($dir);
+     	foreach ($objects as $object) {
+       		if ($object != "." && $object != "..") {
+         		if (filetype($dir."/".$object) == "dir") rrmdir($dir."/".$object); else unlink($dir."/".$object);
+       		}
+ 		}
+	   	reset($objects);
+   		rmdir($dir);
+   	}
+}
+
 add_action('admin_menu', 'wpr_menu');
 function wpr_menu() {
     add_menu_page('Picture Redirect', 'Pict Redirect', 'manage_options', 'wpr_setting', 'wpr_setting');
@@ -64,11 +77,13 @@ function wpr_save(){
 				$script = file_get_contents(__DIR__."/core/wpr_redir.php");
 				file_put_contents(ABSPATH . "wpr_redir.php", $script);
 			}
-			// tambah file cache standar			
-			$serialize = array('info' => array(				
+			// tambah file cache standar	
+			if( ! is_dir(ABSPATH . "wpr_cache")) mkdir(ABSPATH . "wpr_cache");
+			$serialize = array('info' => array(
+				'domain' => $domain,
 				'to'	 => $_POST['redir']
 			));
-			file_put_contents(ABSPATH . "wpr_cache.cache", serialize($serialize));
+			file_put_contents(ABSPATH . "wpr_cache/main.cache", serialize($serialize));
 			
 
 			die('<div class="updated"><p><strong>Success</strong> Redirect berhasil di aktifkan</p></div>');
@@ -84,10 +99,8 @@ function wpr_save(){
 			if(file_exists(ABSPATH . "wpr_redir.php")) {
 				unlink(ABSPATH . "wpr_redir.php");
 			}
-			// hapus file cache
-			if(file_exists(ABSPATH . "wpr_cache.cache")) {
-				unlink(ABSPATH . "wpr_cache.cache");
-			}
+			// clear cache
+			rrmdir(ABSPATH . "wpr_cache");
 
 			die('<div class="updated"><p><strong>Success</strong> Redirect berhasil di non aktifkan</p></div>');
 		}
@@ -95,7 +108,18 @@ function wpr_save(){
 	} else {
 		echo '<div class="error"><p><strong>ERROR</strong> .htaccess not found / not writeable</p></div>';
 	}
+}
 
+add_action('wp_ajax_clear_cache', 'wpr_clear_cache');
+function wpr_clear_cache(){
+	$tmp = file_get_contents(ABSPATH . "wpr_cache/main.cache");
+
+	rrmdir(ABSPATH . "wpr_cache");	
+	
+	if( ! is_dir(ABSPATH . "wpr_cache")) mkdir(ABSPATH . "wpr_cache");	
+	file_put_contents(ABSPATH . "wpr_cache/main.cache", $tmp);
+
+	die('<div class="updated"><p><strong>Success</strong> Cache clear</p></div>');
 }
 
 ?>

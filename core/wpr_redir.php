@@ -10,22 +10,25 @@
 include('wp-config.php');
 
 if(isset($_GET['to'])){
+
+	if( ! is_dir(ABSPATH . "wpr_cache") === false) mkdir(ABSPATH . "wpr_cache");
 	
-	$cache_file = ABSPATH . "wpr_cache.cache";	
+	$cache_file = ABSPATH . "wpr_cache/main.cache";	
 	if(! file_exists($cache_file) || ! is_writable($cache_file)) {
 		die("Please re-enable plugins");
 	}
 	
-	$cache 		= unserialize(file_get_contents($cache_file));
+	$main_cache	= unserialize(file_get_contents($cache_file));
 
 	$image 		= $_GET['to'];
 	$imageMD5 	= md5($image);
-	$wpr_to 	= $cache['info']['to'];
+	$wpr_to 	= $main_cache['info']['to'];
 
     // cari gambar yang benar
-    if(isset($cache['db'][$imageMD5])) {
-    	$to_single 		= $cache['db'][$imageMD5]['single'];
-    	$to_attach		= $cache['db'][$imageMD5]['attachment'];
+    if(file_exists(ABSPATH . "wpr_cache/" . $imageMD5)) {
+    	$cache = unserialize(file_get_contents(ABSPATH . "wpr_cache/" . $imageMD5));
+    	$to_single 		= $cache['single'];
+    	$to_attach		= $cache['attachment'];
     } else {
     	$attach = $wpdb->get_results("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND post_status='inherit' AND guid LIKE '%{$image}'");
 		$ID = $attach[0]->post_parent;
@@ -34,9 +37,10 @@ if(isset($_GET['to'])){
 		$to_single = get_permalink($single[0]->ID);
 		$to_attach = get_permalink($attach[0]->ID);
 
-		$cache['db'][$imageMD5]['single'] = $to_single;
-		$cache['db'][$imageMD5]['attachment'] = $to_attach;
-		file_put_contents($cache_file, serialize($cache));
+		$cache['single'] = $to_single;
+		$cache['attachment'] = $to_attach;
+
+		file_put_contents(ABSPATH . "wpr_cache/" . $imageMD5, serialize($cache));
     }
 	
 	if( $wpr_to == 'attachment' ) { // attachment
@@ -44,7 +48,7 @@ if(isset($_GET['to'])){
 	} else if($wpr_to == 'single') { // single
 		$url = $to_single;
 	} else { // home
-		$url = '';
+		$url = "http://" . $main_cache['info']['domain'];
 	}
 	
 	// redirect now!

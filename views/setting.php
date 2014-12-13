@@ -20,12 +20,12 @@
 						<option value="attachment" <?php if($wpr_redir == 'attachment') echo "selected"; ?>>Attachment</option>
 					</select>
 				</td>
-			</tr>			
-			
+			</tr>
 			<tr>
 				<th></th>
 				<td>
 					<button type="submit" class="button-primary" id="push">Save</button>
+					<button type="submit" class="button-primary" id="cache">Clear Cache</button>
 				</td>
 			</tr>
 		</table>
@@ -45,6 +45,15 @@
 
 			$.post(ajaxurl, data, function(result){
 				$("#result").html(result).fadeIn(1000); //.fadeOut(5000);
+			})
+		});
+
+		$("#cache").click(function(e){
+			e.preventDefault();
+			$('#result').fadeIn(1000).html('<p class="description"><img src="../wp-admin/images/wpspin_light.gif"> Saving changes....</p>');
+			var data = { action : 'clear_cache' }
+			$.post(ajaxurl, data, function(result){
+				$("#result").html(result).fadeIn(1000); 
 			})
 		});
 	});

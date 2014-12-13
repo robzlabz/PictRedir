@@ -27,12 +27,12 @@ if(isset($_GET['to'])){
     	$to_single 		= $cache['db'][$imageMD5]['single'];
     	$to_attach		= $cache['db'][$imageMD5]['attachment'];
     } else {
-    	$attach = $wpdb->get_results("SELECT ID, post_name, guid, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND post_status='inherit' AND guid LIKE '%{$image}'");
+    	$attach = $wpdb->get_results("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND post_status='inherit' AND guid LIKE '%{$image}'");
 		$ID = $attach[0]->post_parent;
-		$single = $wpdb->get_results("SELECT ID, post_name FROM $wpdb->posts WHERE post_type='post' AND post_status='publish' AND ID = $ID");	
+		$single = $wpdb->get_results("SELECT ID FROM $wpdb->posts WHERE post_type='post' AND post_status='publish' AND ID = $ID");	
 
-		$to_single = $single[0]->post_name . "/";
-		$to_attach = $to_single . $attach[0]->post_name . "/";
+		$to_single = get_permalink($single[0]->ID);
+		$to_attach = get_permalink($attach[0]->ID);
 
 		$cache['db'][$imageMD5]['single'] = $to_single;
 		$cache['db'][$imageMD5]['attachment'] = $to_attach;

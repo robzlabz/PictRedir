@@ -7,7 +7,7 @@
 				<th><label>Status : </label></th>
 				<td>
 					<label>
-						<input type="checkbox" name="status" <?php if($wpr_status == 1) echo "checked" ?>> Enable
+						<input type="checkbox" name="status" <?php if($wpr_status == 1) echo "checked"; ?>> Enable
 					</label>
 				</td>
 			</tr>

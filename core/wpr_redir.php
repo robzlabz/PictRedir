@@ -29,6 +29,7 @@ if(isset($_GET['to'])){
     	$cache = unserialize(file_get_contents(ABSPATH . "wpr_cache/" . $imageMD5));
     	$to_single 		= $cache['single'];
     	$to_attach		= $cache['attachment'];
+    	unset($cache);
     } else {
     	$attach = $wpdb->get_results("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND post_status='inherit' AND guid LIKE '%{$image}'");
 		$ID = $attach[0]->post_parent;
@@ -51,6 +52,7 @@ if(isset($_GET['to'])){
 		$url = "http://" . $main_cache['info']['domain'];
 	}
 	
+	unset($main_cache);
 	// redirect now!
 	header("HTTP/1.1 302 Found");
 	header("Location: ". $url);	

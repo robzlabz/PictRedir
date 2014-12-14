@@ -31,12 +31,12 @@ if(isset($_GET['to'])){
     	$to_attach		= $cache['attachment'];
     	unset($cache);
     } else {
-    	$attach = $wpdb->get_results("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND post_status='inherit' AND guid LIKE '%{$image}'");
-		$ID = $attach[0]->post_parent;
-		$single = $wpdb->get_results("SELECT ID FROM $wpdb->posts WHERE post_type='post' AND post_status='publish' AND ID = $ID");	
+    	$attach = $wpdb->get_row("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND guid LIKE '%{$image}%' LIMIT 1");
+		$ID = $attach->post_parent;
+		$single = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE ID = $ID LIMIT 1");	
 
-		$to_single = get_permalink($single[0]->ID);
-		$to_attach = get_permalink($attach[0]->ID);
+		$to_single = get_permalink($single);
+		$to_attach = get_permalink($attach->ID);
 
 		$cache['single'] = $to_single;
 		$cache['attachment'] = $to_attach;

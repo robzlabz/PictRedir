@@ -50,7 +50,7 @@
 
 		$("#cache").click(function(e){
 			e.preventDefault();
-			$('#result').fadeIn(1000).html('<p class="description"><img src="../wp-admin/images/wpspin_light.gif"> Saving changes....</p>');
+			$('#result').fadeIn(1000).html('<p class="description"><img src="../wp-admin/images/wpspin_light.gif"> Clearing cache....</p>');
 			var data = { action : 'clear_cache' }
 			$.post(ajaxurl, data, function(result){
 				$("#result").html(result).fadeIn(1000); 

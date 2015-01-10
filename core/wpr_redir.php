@@ -11,7 +11,7 @@ include('wp-config.php');
 
 if(isset($_GET['to'])){
 
-	if( ! is_dir(ABSPATH . "wpr_cache") === false) mkdir(ABSPATH . "wpr_cache");
+	if( ! is_dir(ABSPATH . "wpr_cache")) mkdir(ABSPATH . "wpr_cache");
 	
 	$cache_file = ABSPATH . "wpr_cache/main.cache";	
 	if(! file_exists($cache_file) || ! is_writable($cache_file)) {

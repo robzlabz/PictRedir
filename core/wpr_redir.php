@@ -55,6 +55,10 @@ if(isset($_GET['to'])){
 	unset($main_cache);
 	// redirect now!
 	header("HTTP/1.1 200 OK");
+	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+	header("Cache-Control: post-check=0, pre-check=0", false);
+	header("Pragma: no-cache");
+	
 	echo '<META HTTP-EQUIV="Refresh" CONTENT="1; URL='.$url.'">';
 	die();
 }

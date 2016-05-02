@@ -14,29 +14,30 @@ if(isset($_GET['to'])){
     if( ! is_dir(ABSPATH . "wpr_cache")) mkdir(ABSPATH . "wpr_cache");
 
     $cache_file = ABSPATH . "wpr_cache/main.cache";
-    if(! file_exists($cache_file) || ! is_writable($cache_file)) {
+    if( ! file_exists($cache_file)) {
         die("Please re-enable plugins");
     }
 
-    $main_cache    = unserialize(file_get_contents($cache_file));
+    $main_cache     = unserialize(file_get_contents($cache_file));
 
-    $image         = $_GET['to'];
-	$imageMD5 	= md5($image);
-	$wpr_to 	= $main_cache['info']['to'];
+    $image          = $_GET['to'];
+    $imageMD5       = md5($image);
+    $wpr_to         = $main_cache['info']['to'];
 
     // cari gambar yang benar
     if(file_exists(ABSPATH . "wpr_cache/" . $imageMD5)) {
-    	$cache = unserialize(file_get_contents(ABSPATH . "wpr_cache/" . $imageMD5));
+    	$cache 			= unserialize(file_get_contents(ABSPATH . "wpr_cache/" . $imageMD5));
     	$to_single 		= $cache['single'];
     	$to_attach		= $cache['attachment'];
-    	unset($cache);
     } else {
-    	$attach = $wpdb->get_row("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND guid LIKE '%{$image}%' LIMIT 1");
+    	$attach = $wpdb->get_row("SELECT post_name, post_parent FROM $wpdb->posts WHERE post_type='attachment' AND guid LIKE '%{$image}%' LIMIT 1");
 		$ID = $attach->post_parent;
-		$single = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE ID = $ID LIMIT 1");
+		$single = $wpdb->get_var("SELECT post_name FROM $wpdb->posts WHERE ID = $ID LIMIT 1");
 
-		$to_single = get_permalink($single);
-		$to_attach = get_permalink($attach->ID);
+		$base = $_SERVER['HTTP_HOST'];
+
+		$to_single = 'http://' . $base . '/' . $single . '/';
+		$to_attach = 'http://' . $base . '/' . $single . '/' . $attach->post_name . '/';
 
 		$cache['single'] = $to_single;
 		$cache['attachment'] = $to_attach;
@@ -49,19 +50,14 @@ if(isset($_GET['to'])){
 	} else if($wpr_to == 'single') { // single
 		$url = $to_single;
 	} else { // home
-		$url = "http://" . $main_cache['info']['domain'];
+		$url = "http://" . $_SERVER['HTTP_HOST'];
 	}
 
-	unset($main_cache);
-	// redirect now!
-	header("HTTP/1.1 200 OK");
-    	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    	header("Cache-Control: post-check=0, pre-check=0", false);
-    	header("Pragma: no-cache");
+	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+	header("Cache-Control: post-check=0, pre-check=0", false);
+	header("Pragma: no-cache");
 
-    	$su = get_option('site_url');
 	echo '<META HTTP-EQUIV="Refresh" CONTENT="'.mt_rand(2,3).'; URL='.$url.'">';
-    	echo '<img src="'.$su.'/'.$image.'"/>';
 
 	die();
 }

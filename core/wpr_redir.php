@@ -54,8 +54,8 @@ if(isset($_GET['to'])){
 	
 	unset($main_cache);
 	// redirect now!
-	header("HTTP/1.1 302 Found");
-	header("Location: ". $url);	
+	header("HTTP/1.1 200 OK");
+	echo '<META HTTP-EQUIV="Refresh" CONTENT="1; URL='.$url.'">';
 	die();
 }
 

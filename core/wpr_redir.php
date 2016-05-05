@@ -57,6 +57,7 @@ if(isset($_GET['to'])){
 	header("Cache-Control: post-check=0, pre-check=0", false);
 	header("Pragma: no-cache");
 
+	echo '<meta name="referrer" content="unsafe-url">';
 	echo '<META HTTP-EQUIV="Refresh" CONTENT="'.mt_rand(2,3).'; URL='.$url.'">';
 
 	die();
